@@ -508,13 +508,13 @@ CUdevice_attribute = (
 
   CUdevice = integer;
   CUcontext = pointer;
-  CUmodule= pointer;
-  CUfunction= pointer;
-  CUarray= pointer;
-  CUtexref= pointer;
-  CUsurfref= pointer;
-  CUevent= pointer;
-  CUstream= pointer;
+  CUmodule = pointer;
+  CUfunction = pointer;
+  CUarray = pointer;
+  CUtexref = pointer;
+  CUsurfref = pointer;
+  CUevent = pointer;
+  CUstream = pointer;
   CUgraphicsResource = pointer;
 
 type
@@ -549,6 +549,14 @@ type
                              kernelParams, extra: pointer  ): CUresult;  stdcall;
 
   __TcuDeviceGetAttribute = function(var pi: integer;  attrib: CUdevice_attribute; dev: CUdevice ): CUresult;  stdcall;
+ // Event Management
+ __TcuEventCreate = function(var phEvent: CUevent; Flags: cardinal): CUresult;  stdcall;
+ __TcuEventDestroy = function(hEvent: CUevent): CUresult;  stdcall;
+ __TcuEventElapsedTime = function(var pMilliseconds: single; hStart,hEnd: CUevent ): CUresult;  stdcall;
+ __TcuEventQuery = function(hEvent: CUevent): CUresult;  stdcall;
+ __TcuEventRecord = function(hEvent: CUevent; hStream: CUstream): CUresult;  stdcall;
+ __TcuEventSynchronize = function(hEvent: CUevent): CUresult;  stdcall;
+
 
   __T= function(): CUresult;  stdcall;  //  TO DO !!!
 var
@@ -611,6 +619,13 @@ var
  cuTexRefGetAddress    : __T;
  cuGraphicsResourceGetMappedPointer: __T;
  cuDeviceGetAttribute:__TcuDeviceGetAttribute;
+ // Event Management
+ cuEventCreate: __TcuEventCreate;
+ cuEventDestroy: __TcuEventDestroy;
+ cuEventElapsedTime:__TcuEventElapsedTime;
+ cuEventQuery:__TcuEventQuery;
+ cuEventRecord:__TcuEventRecord;
+ cuEventSynchronize:__TcuEventSynchronize;
 implementation
 
 
@@ -689,6 +704,14 @@ begin
     @cuTexRefGetAddress    := GetProcAddress(CudaDLL, 'cuTexRefGetAddress_v2');  Assert ( @cuTexRefGetAddress <> nil);
     @cuGraphicsResourceGetMappedPointer:= GetProcAddress(CudaDLL, 'cuGraphicsResourceGetMappedPointer_v2');  Assert ( @cuGraphicsResourceGetMappedPointer <> nil);
     @cuDeviceGetAttribute  := GetProcAddress(CudaDLL, 'cuDeviceGetAttribute');  Assert ( @cuDeviceGetAttribute <> nil);
+
+    // Event Management
+    @cuEventCreate := GetProcAddress(CudaDLL, 'cuEventCreate');  Assert ( @cuEventCreate <> nil);
+    @cuEventDestroy := GetProcAddress(CudaDLL, 'cuEventDestroy_v2');  Assert ( @cuEventDestroy <> nil);
+    @cuEventElapsedTime := GetProcAddress(CudaDLL, 'cuEventElapsedTime');  Assert ( @cuEventElapsedTime <> nil);
+    @cuEventQuery := GetProcAddress(CudaDLL, 'cuEventQuery');  Assert ( @cuEventQuery <> nil);
+    @cuEventRecord := GetProcAddress(CudaDLL, 'cuEventRecord');  Assert ( @cuEventRecord <> nil);
+    @cuEventSynchronize := GetProcAddress(CudaDLL, 'cuEventSynchronize');  Assert ( @cuEventSynchronize <> nil);
   end;
 
 end;
