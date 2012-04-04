@@ -42,9 +42,16 @@ PcufftDoubleReal = ^cufftDoubleReal;
 // consists of interleaved real and imaginary components.
 // cufftDoubleComplex is the double-precision equivalent.
 //??typedef cuComplex cufftComplex;
+cufftComplex = packed record
+  x,y: single;
+end;
 //??typedef cuDoubleComplex cufftDoubleComplex;
-PcufftComplex = pointer;
-PcufftDoubleComplex= pointer;
+cufftDoubleComplex = packed record
+  x,y: double;
+end;
+
+PcufftComplex = ^cufftComplex;
+PcufftDoubleComplex= ^cufftDoubleComplex;
 
 // CUFFT transform directions
 const CUFFT_FORWARD = -1; // Forward FFT

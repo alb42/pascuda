@@ -35,9 +35,9 @@ begin
 end;
 
 const
-  SIZE =1024;
+  SIZE =1024*16;
 type
-  TmyArray = array [0..3] of pointer;
+  TKernelParams = array of pointer;
 
 var
   n, i: integer;
@@ -46,7 +46,7 @@ var
   hContext: CUcontext;
   hKernel: CUfunction;
   str: ansiString;
-  mKernelParameterConfig: TmyArray;
+  v_KernelParams: TKernelParams;
 
   d_a: pointer;
   d_b: pointer;
@@ -55,6 +55,8 @@ var
 
   buf,buf_out: array of integer;
 
+  event_start, event_stop:   CUevent;
+  event_time: single;
 begin
   n := SIZE;
   SetLength(buf,SIZE);
@@ -79,25 +81,36 @@ begin
   checkCudaErrors( cuMemcpyHtoD(d_b,@buf[0], sizeof(integer)*SIZE));
   checkCudaErrors( cuMemcpyHtoD(d_n,@n, sizeof(integer)));
 
-  mKernelParameterConfig[0] := @d_a;
-  mKernelParameterConfig[1] := @d_b;
-  mKernelParameterConfig[2] := @d_c;
-  mKernelParameterConfig[3] := @d_n;
+  setlength(v_KernelParams,4);
+  v_KernelParams[0] := @d_a;
+  v_KernelParams[1] := @d_b;
+  v_KernelParams[2] := @d_c;
+  v_KernelParams[3] := @d_n;
 
-  for I := 0 to 2 - 1 do
-   checkCudaErrors( cuLaunchKernel( hKernel , SIZE,1,1,1,1,1,0, nil,@mKernelParameterConfig[0],nil ));
+
+  checkCudaErrors( cuEventCreate(event_start,0));
+
+  checkCudaErrors( cuEventCreate(event_stop,0));
+
+  checkCudaErrors( cuEventRecord(event_start,0));
+
+  checkCudaErrors( cuLaunchKernel( hKernel , SIZE,1,1,1,1,1,0, nil,@v_KernelParams[0],nil ));
+
+  checkCudaErrors( cuEventRecord(event_stop,0));
+
+  checkCudaErrors( cuEventSynchronize(event_stop));
+
+  checkCudaErrors( cuEventElapsedTime(event_time, event_start, event_stop));
+
+  writeln(format('run time: %3.1f ms',[event_time]));
 
   cuMemcpyDtoH(@buf_out[0],d_c, sizeof(integer)*SIZE);
 
-
+  (* display result
   for I := 0 to SIZE - 1 do
   begin
     writeln(format('[%d] host:%d device:%d  ', [i, buf[i], buf_out[I] ] ));
-  end;
-
-//  showmessage(format('%d %d %d',[buf[1], buf[2], buf[3] ]));
-
-
+  end;*)
 
   readln;
 end.
